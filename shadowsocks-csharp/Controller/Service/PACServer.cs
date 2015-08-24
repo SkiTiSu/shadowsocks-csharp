@@ -33,8 +33,12 @@ namespace Shadowsocks.Controller
             this._config = config;
         }
 
-        public bool Handle(byte[] firstPacket, int length, Socket socket)
+        public bool Handle(byte[] firstPacket, int length, Socket socket, object state)
         {
+            if (socket.ProtocolType != ProtocolType.Tcp)
+            {
+                return false;
+            }
             try
             {
                 string request = Encoding.UTF8.GetString(firstPacket, 0, length);
@@ -81,7 +85,6 @@ namespace Shadowsocks.Controller
                 return false;
             }
         }
-
 
         public string TouchPACFile()
         {
@@ -142,7 +145,7 @@ Connection: Close
 ", System.Text.Encoding.UTF8.GetBytes(pac).Length) + pac;
                 byte[] response = System.Text.Encoding.UTF8.GetBytes(text);
                 socket.BeginSend(response, 0, response.Length, 0, new AsyncCallback(SendCallback), socket);
-                Util.Utils.ReleaseMemory();
+                Util.Utils.ReleaseMemory(true);
             }
             catch (Exception e)
             {
